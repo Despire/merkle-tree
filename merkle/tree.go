@@ -12,27 +12,12 @@ type Tree struct {
 	Leaves []*Node
 }
 
-// NodeType denotes the type of the node
-type NodeType byte
-
-// Type of nodes in MerkleTree.
-const (
-	Leaf NodeType = iota
-	TreeNode
-)
-
-type Relationships struct {
+// Node represents a node in the merkle tree.
+type Node struct {
+	// Pointers to respective siblings.
 	Parent *Node
 	Left   *Node
 	Right  *Node
-}
-
-// Node represents a node in the merkle tree.
-type Node struct {
-	// Relationships are pointers to respective siblings.
-	Relationships
-	// Typ is the type of the node.
-	Typ NodeType
 	// Hash is the hash of the children if the type is not Leaf, otherwise is the hash of the contents.
 	Hash []byte
 }
@@ -53,9 +38,7 @@ func construct(values [][]byte) (*Node, []*Node) {
 		h := sha512.Sum512(values[i])
 
 		leaves[i] = &Node{
-			Relationships: Relationships{},
-			Typ:           Leaf,
-			Hash:          h[:],
+			Hash: h[:],
 		}
 	}
 
@@ -63,9 +46,7 @@ func construct(values [][]byte) (*Node, []*Node) {
 		h := sha512.Sum512(values[len(values)-1])
 
 		leaves = append(leaves, &Node{
-			Relationships: Relationships{},
-			Typ:           Leaf,
-			Hash:          h[:],
+			Hash: h[:],
 		})
 	}
 
@@ -80,13 +61,10 @@ func root(queue []*Node) *Node {
 		h := sha512.Sum512(append(left.Hash, right.Hash...))
 
 		node := &Node{
-			Relationships: Relationships{
-				Parent: nil,
-				Left:   left,
-				Right:  right,
-			},
-			Typ:  TreeNode,
-			Hash: h[:],
+			Parent: nil,
+			Left:   left,
+			Right:  right,
+			Hash:   h[:],
 		}
 
 		left.Parent = node
